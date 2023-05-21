@@ -1,34 +1,33 @@
-const HtmlWebpackPlugin = require('html-webpack-plugin'); // generates an HTML file from a template
-const WebpackPwaManifest = require('webpack-pwa-manifest'); // generates a manifest.json file
-const path = require('path'); // provides utilities for working with file and directory paths
-const { InjectManifest } = require('workbox-webpack-plugin'); // generates a service worker file using a webpack build
-
-// TODO: Add and configure workbox plugins for a service worker and manifest file.
-// TODO: Add CSS loaders and babel to webpack.
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const WebpackPwaManifest = require('webpack-pwa-manifest');
+const path = require('path');
+const { GenerateSW } = require('workbox-webpack-plugin');
 
 module.exports = () => {
   return {
-    mode: 'development', //
+    mode: 'development', // Set the mode to development
     entry: {
-      main: './src/js/index.js', // entry point for the application
-      install: './src/js/install.js', 
-      database: './src/js/database.js',
-      editor: './src/js/editor.js',
-      header: './src/js/header.js',
-
+      main: './src/js/index.js', // Entry point for the main application
+      install: './src/js/install.js', // Entry point for install functionality
+      database: './src/js/database.js', // Entry point for database functionality
+      editor: './src/js/editor.js', // Entry point for editor functionality
+      header: './src/js/header.js', // Entry point for header functionality
     },
     output: {
       filename: '[name].bundle.js',
-      path: path.resolve(__dirname, 'dist'), // output directory
+      path: path.resolve(__dirname, 'dist'), // Output directory for bundled files
     },
     plugins: [
       new HtmlWebpackPlugin({
-        template: './index.html',
-        title: 'Jate', // title of the generated HTML page
+        template: './index.html', // HTML template file
+        title: 'Jate', // Title of the generated HTML page
       }),
-      new InjectManifest({
-        swSrc: './src-sw.js', // service worker entry point
-        swDest: 'src-sw.js', // name of the generated service worker file
+      new GenerateSW({
+        swDest: 'sw.js', // Name of the generated service worker file
+        clientsClaim: true, // Take control of all client instances as soon as the service worker is active
+        skipWaiting: true, // Force newly registered service workers to activate immediately, bypassing the waiting phase
+        exclude: [/\.map$/, /asset-manifest\.json$/], // Regular expressions to exclude specific files from caching
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // Maximum size of files to be cached
       }),
       new WebpackPwaManifest({
         fingerprints: false,
@@ -42,20 +41,18 @@ module.exports = () => {
         publicPath: '/',
         icons: [
           {
-            src: path.resolve('src/images/logo.png'),
-            sizes: [96, 128, 192, 256, 384, 512],
-            destination: path.join('assets', 'icons'),
+            src: path.resolve('src/images/logo.png'), // Path to the app icon
+            sizes: [96, 128, 192, 256, 384, 512], // Icon sizes for different devices
+            destination: path.join('assets', 'icons'), // Output directory for icons
           },
         ],
       }),
-
     ],
-
     module: {
       rules: [
         {
           test: /\.css$/i,
-          use: ['style-loader', 'css-loader'],
+          use: ['style-loader', 'css-loader'], // CSS loaders for processing CSS files
         },
         {
           test: /\.m?js$/,
@@ -63,8 +60,8 @@ module.exports = () => {
           use: {
             loader: 'babel-loader',
             options: {
-              presets: ['@babel/preset-env'],
-              plugins: ['@babel/plugin-proposal-object-rest-spread', '@babel/transform-runtime'],
+              presets: ['@babel/preset-env'], // Babel presets for transpiling JavaScript
+              plugins: ['@babel/plugin-proposal-object-rest-spread', '@babel/transform-runtime'], // Babel plugins
             },
           },
         },

@@ -1,3 +1,4 @@
+
 import { openDB } from 'idb'; // import the openDB method from the idb package //
 
 const initdb = async () => // create a method called initdb that will be called when the app starts //
